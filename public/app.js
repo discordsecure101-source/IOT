@@ -146,10 +146,10 @@ const DOM = {
 
 window.copyCode = function (btn) {
   const code = btn.closest("pre").querySelector("code").textContent;
-  navigator.clipboard.writeText(code).then(() => { 
+  navigator.clipboard.writeText(code).then(() => {
     const oldText = btn.textContent;
-    btn.textContent = "Copied!"; 
-    setTimeout(() => btn.textContent = oldText, 1500); 
+    btn.textContent = "Copied!";
+    setTimeout(() => btn.textContent = oldText, 1500);
   });
 };
 
@@ -200,8 +200,11 @@ async function initAuth() {
       document.getElementById('auth-modal').classList.add('active');
       initAuthUI();
     } else {
+      console.log("[AUTH] User Status:", data.user.email, "| Tier:", data.user.tier);
       if (data.user && data.user.tier === 'admin') {
-        if (DOM.adminTabBtn) DOM.adminTabBtn.style.display = 'flex';
+        console.log("[AUTH] Admin access granted. Enabling Admin Panel.");
+        const adminTab = document.getElementById('admin-tab-btn');
+        if (adminTab) adminTab.style.display = 'flex';
         initAdminUI();
       }
     }
@@ -1083,16 +1086,16 @@ function drawLogoSkin() {
   // SPLOTS (Spots)
   if (logoSkinType === 'spots') {
     logoSkinData.time += 0.02;
-    
+
     logoSkinData.spots.forEach((s, i) => {
       s.angle += s.speed * 0.5;
       const wobble = Math.sin(logoSkinData.time + s.phase) * 10;
       s.x = cx + Math.cos(s.angle) * (s.dist + wobble);
       s.y = cy + Math.sin(s.angle) * (s.dist + wobble);
-      
+
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.r * 2.5, 0, Math.PI * 2);
-      
+
       const hue = (i * 30 + logoSkinData.time * 20) % 360;
       ctx.fillStyle = `hsl(${hue}, 80%, 60%)`;
       ctx.fill();
@@ -1102,14 +1105,14 @@ function drawLogoSkin() {
   // ZEBRA
   if (logoSkinType === 'zebra') {
     logoSkinData.offset += 1;
-    
+
     const stripeW = 8;
     ctx.lineWidth = 8;
     for (let x = -h; x < w + h; x += stripeW * 2) {
       ctx.beginPath();
       ctx.moveTo(x + logoSkinData.offset % (stripeW * 2), 0);
       ctx.lineTo(x + logoSkinData.offset % (stripeW * 2) - h, h);
-      ctx.strokeStyle = '#000'; 
+      ctx.strokeStyle = '#000';
       ctx.stroke();
     }
   }
@@ -1128,7 +1131,7 @@ function drawLogoSkin() {
 
   // FIRE
   if (logoSkinType === 'fire') {
-    
+
     logoSkinData.flames.forEach(f => {
       f.y -= f.speed * 1.5;
       f.life -= 0.02;
@@ -1147,7 +1150,7 @@ function drawLogoSkin() {
 
   // ORBIT
   if (logoSkinType === 'orbit') {
-    
+
     logoSkinData.angle1 += 0.02;
     logoSkinData.angle2 += 0.03;
     logoSkinData.angle3 += 0.015;
@@ -1155,13 +1158,13 @@ function drawLogoSkin() {
     const drawOrbitDot = (angle, orbitR, tilt, color) => {
       const ox = cx + Math.cos(angle) * orbitR;
       const oy = cy + Math.sin(angle) * orbitR * tilt;
-      
+
       ctx.beginPath();
       ctx.ellipse(cx, cy, orbitR, orbitR * tilt, 0, 0, Math.PI * 2);
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
       ctx.lineWidth = 1.5;
       ctx.stroke();
-      
+
       ctx.beginPath();
       ctx.arc(ox, oy, 4, 0, Math.PI * 2);
       ctx.fillStyle = color;
@@ -1175,7 +1178,7 @@ function drawLogoSkin() {
 
   // HOLOGRAM
   if (logoSkinType === 'hologram') {
-    
+
     logoSkinData.scanY = (logoSkinData.scanY + 1.5) % h;
     // Solid scan lines
     for (let y = 0; y < h; y += 4) {
@@ -1213,9 +1216,9 @@ function drawLogoSkin() {
   DOM.deleteChatCancelBtn?.addEventListener("click", () => { pendingDeleteId = null; DOM.deleteChatModal?.classList.remove("active"); });
   DOM.deleteChatConfirmBtn?.addEventListener("click", () => { if (pendingDeleteId) confirmDeleteChat(pendingDeleteId); });
   DOM.deleteChatModal?.addEventListener("click", (e) => { if (e.target === DOM.deleteChatModal) { pendingDeleteId = null; DOM.deleteChatModal?.classList.remove("active"); } });
-  
+
   DOM.settingsBtn?.addEventListener("click", () => DOM.settingsModal?.classList.add("active"));
-  
+
   DOM.docsBtn?.addEventListener("click", () => DOM.docsModal?.classList.add("active"));
   DOM.colorBtns?.forEach(btn => {
     btn.addEventListener("click", () => {
@@ -1228,19 +1231,19 @@ function drawLogoSkin() {
     });
   });
 
-  
+
   DOM.form?.addEventListener("submit", onSubmit);
   DOM.input?.addEventListener("input", onInputChange);
   DOM.input?.addEventListener("keydown", onKeyDown);
   DOM.input?.addEventListener("paste", onPaste);
   DOM.fileInput?.addEventListener("change", onFileSelect);
-  
+
   document.body.addEventListener("dragover", onDragOver);
   document.body.addEventListener("dragleave", onDragLeave);
   document.body.addEventListener("drop", onDrop);
   DOM.searchToggle?.addEventListener("click", toggleSearch);
   DOM.searchInput?.addEventListener("input", renderSidebar);
-  
+
   document.getElementById('logout-btn')?.addEventListener('click', async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
@@ -1305,7 +1308,7 @@ function drawLogoSkin() {
     const password = document.getElementById('auth-password').value;
     const inviteCode = document.getElementById('auth-invite').value;
     const errorEl = document.getElementById('auth-error');
-    
+
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -1327,7 +1330,7 @@ function drawLogoSkin() {
   $("#build-website-btn")?.addEventListener("click", () => {
     const creativeOpt = Array.from($$(".cms-option")).find(o => o.dataset.value === "IOT-creative");
     if (creativeOpt) creativeOpt.click();
-    
+
     DOM.input.value = "Architect a premium, modern, and high-performance website for me. Implement a sleek UI using semantic HTML5, advanced CSS3 with animations, and robust JavaScript logic.";
     onInputChange();
     DOM.form.requestSubmit();
@@ -1456,7 +1459,7 @@ async function toggleScreenShare() {
 
   try {
     const stream = await navigator.mediaDevices.getDisplayMedia({
-      video: { 
+      video: {
         cursor: "always",
         width: { ideal: 1920 },
         height: { ideal: 1080 }
@@ -1565,7 +1568,7 @@ function deleteChat(id) {
   const conv = conversations.find((c) => c.id === id);
   const title = conv ? conv.title : "this chat";
   pendingDeleteId = id;
-  DOM.deleteChatDesc.textContent = `Are you sure you want to delete "${title.length > 40 ? title.slice(0,37) + '...' : title}"? This action cannot be undone.`;
+  DOM.deleteChatDesc.textContent = `Are you sure you want to delete "${title.length > 40 ? title.slice(0, 37) + '...' : title}"? This action cannot be undone.`;
   DOM.deleteChatModal.classList.add("active");
 }
 
@@ -1582,7 +1585,7 @@ function confirmDeleteChat(id) {
   }
   pendingDeleteId = null;
   DOM.deleteChatModal.classList.remove("active");
-  showToast(`"${deletedTitle.length > 30 ? deletedTitle.slice(0,27) + '...' : deletedTitle}" deleted`, "success");
+  showToast(`"${deletedTitle.length > 30 ? deletedTitle.slice(0, 27) + '...' : deletedTitle}" deleted`, "success");
 }
 
 function showToast(message, type = "info", duration = 3000) {
@@ -1692,16 +1695,16 @@ function onInputChange() {
 function onKeyDown(e) {
   const behavior = appSettings.sendBehavior || 'enter';
   if (behavior === 'enter') {
-    if (e.key === "Enter" && !e.shiftKey) { 
-      e.preventDefault(); 
-      DOM.form.requestSubmit(); 
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      DOM.form.requestSubmit();
     }
   } else {
     if (e.key === "Enter" && e.shiftKey) {
     }
     if (e.key === "Enter" && e.ctrlKey) {
-       e.preventDefault();
-       DOM.form.requestSubmit();
+      e.preventDefault();
+      DOM.form.requestSubmit();
     }
   }
 }
@@ -1768,7 +1771,7 @@ function renderPreviews() {
       </div>`;
       const preview = tile.querySelector('.file-chip-preview');
       preview.removeAttribute('data-highlighted');
-      try { hljs.highlightElement(preview); } catch (e) {}
+      try { hljs.highlightElement(preview); } catch (e) { }
       tile.addEventListener("click", () => openFileDrawer(file.name, file.content));
     }
     tile.innerHTML += `<button type="button" class="preview-remove">x</button>`;
@@ -1780,16 +1783,16 @@ function renderPreviews() {
 function openFileDrawer(name, content) {
   if (!content) return;
   currentFileContent = content;
-  
+
   DOM.drawerName.textContent = name;
   const ext = name.split('.').pop().toUpperCase();
   DOM.drawerType.textContent = (ext === name.toUpperCase() ? 'Code' : ext);
-  
+
   const size = (new TextEncoder().encode(content).length / 1024).toFixed(1);
   DOM.drawerSize.textContent = size + " KB";
   const lines = content.split('\n');
   DOM.drawerLines.textContent = lines.length + " lines";
-  
+
   DOM.drawerSearch.value = "";
   renderCodeWithNumbers(content);
 
@@ -1802,7 +1805,7 @@ function renderCodeWithNumbers(content) {
   DOM.drawerCode.textContent = content;
   DOM.drawerCode.className = "hljs";
   DOM.drawerCode.removeAttribute('data-highlighted');
-  try { hljs.highlightElement(DOM.drawerCode); } catch (e) {}
+  try { hljs.highlightElement(DOM.drawerCode); } catch (e) { }
 
   const lines = content.split('\n');
   const lineNumbers = lines.map((_, i) => i + 1).join('\n');
@@ -1820,7 +1823,7 @@ function searchInCode(term) {
   const code = currentFileContent;
   const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const regex = new RegExp(escapedTerm, 'gi');
-  
+
   const highlighted = code.replace(regex, match => `<span class="hljs-search-match">${match}</span>`);
   DOM.drawerCode.innerHTML = highlighted;
 }
@@ -1872,14 +1875,14 @@ async function onSubmit(e) {
     const combinedContext = textFiles.map(f => `File: ${f.name}\n\`\`\`\n${f.content}\n\`\`\``).join("\\n\\n");
     text = (text ? text + "\\n\\n" : "") + "--- File Context Provided ---\\n" + combinedContext;
   }
-  
+
   const images = pendingFiles.filter(f => f.type === "image").map(f => f.src);
   const userMsgText = DOM.input.value.trim() || (pendingFiles.length ? "(Attached files)" : "");
 
-  const userMsg = { role: "user", text: text, displayText: userMsgText, kind: "", attachments: images, fileNames: pendingFiles.map(f=>f.name), ts: Date.now() };
+  const userMsg = { role: "user", text: text, displayText: userMsgText, kind: "", attachments: images, fileNames: pendingFiles.map(f => f.name), ts: Date.now() };
   conv.messages.push(userMsg);
   document.body.classList.add("has-messages");
-  
+
   renderMessage("user", userMsgText, "", userMsg.attachments, false, [], userMsg.fileNames);
 
   if (conv.messages.length === 1 && userMsgText) {
@@ -1921,29 +1924,29 @@ async function requestChat(message, history = [], images = []) {
   const endpoints = ["/api/chat"];
   if (window.location.port !== "3000") endpoints.push("http://localhost:3000/api/chat");
   let lastErr;
-  
+
   const customApiKey = localStorage.getItem("IOT_api_key") || null;
   const customSystemPrompt = localStorage.getItem("IOT_system_prompt") || null;
 
   for (const ep of endpoints) {
     try {
-      const r = await fetch(ep, { 
-        method: "POST", 
-        headers: { 
+      const r = await fetch(ep, {
+        method: "POST",
+        headers: {
           "Content-Type": "application/json"
-        }, 
-        body: JSON.stringify({ 
-          message, 
-          history, 
-          model: DOM.modelSelect.value, 
-          sessionId: activeId, 
+        },
+        body: JSON.stringify({
+          message,
+          history,
+          model: DOM.modelSelect.value,
+          sessionId: activeId,
           search: searchEnabled,
           customApiKey,
           customSystemPrompt,
           temperature: appSettings.temperature,
           searchLimit: appSettings.searchLimit,
           images
-        }) 
+        })
       });
       if (!r.ok) throw new Error(r.status);
       return r;
@@ -2014,7 +2017,7 @@ function renderMessage(role, text, kind, attachments, animate, sources, fileName
         scrollToBottom();
       }
     };
-    setTimeout(type, 100); 
+    setTimeout(type, 100);
   } else {
     contentDiv.innerHTML = parseMarkdown(text);
     processMessageContent(contentDiv);
@@ -2026,12 +2029,12 @@ function renderMessage(role, text, kind, attachments, animate, sources, fileName
   if (attachments && attachments.length) {
     const wrap = document.createElement("div");
     wrap.className = "message-attachments";
-    attachments.forEach((src) => { 
-      const img = document.createElement("img"); 
-      img.src = src; 
-      img.alt = "attachment"; 
+    attachments.forEach((src) => {
+      const img = document.createElement("img");
+      img.src = src;
+      img.alt = "attachment";
       img.addEventListener("click", () => openImageViewer(src));
-      wrap.appendChild(img); 
+      wrap.appendChild(img);
     });
     body.appendChild(wrap);
   }
@@ -2041,7 +2044,7 @@ function renderMessage(role, text, kind, attachments, animate, sources, fileName
     panel.className = "search-sources";
     let html = '<div class="search-sources-title">Sources</div>';
     sources.forEach((s, i) => {
-      html += '<div class="search-source-item"><span>' + (i+1) + '.</span> <a href="' + escapeHTML(s.url) + '" target="_blank" rel="noopener">' + escapeHTML(s.title || s.url) + '</a></div>';
+      html += '<div class="search-source-item"><span>' + (i + 1) + '.</span> <a href="' + escapeHTML(s.url) + '" target="_blank" rel="noopener">' + escapeHTML(s.title || s.url) + '</a></div>';
     });
     panel.innerHTML = html;
     body.appendChild(panel);
@@ -2059,7 +2062,7 @@ function renderMessage(role, text, kind, attachments, animate, sources, fileName
     copyBtn.className = "msg-action-btn";
     copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy';
     copyBtn.addEventListener("click", async () => {
-      try { await navigator.clipboard.writeText(text); copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied'; setTimeout(() => copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy', 1500); } catch {}
+      try { await navigator.clipboard.writeText(text); copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied'; setTimeout(() => copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy', 1500); } catch { }
     });
     actions.appendChild(copyBtn);
     body.appendChild(actions);
@@ -2073,8 +2076,8 @@ function renderMessage(role, text, kind, attachments, animate, sources, fileName
 
       let foundCode = false;
       if (htmlMatch) { builderProject.files['index.html'] = htmlMatch[1]; foundCode = true; }
-      if (cssMatch)  { builderProject.files['style.css'] = cssMatch[1]; foundCode = true; }
-      if (jsMatch)   { builderProject.files['script.js'] = jsMatch[1]; foundCode = true; }
+      if (cssMatch) { builderProject.files['style.css'] = cssMatch[1]; foundCode = true; }
+      if (jsMatch) { builderProject.files['script.js'] = jsMatch[1]; foundCode = true; }
 
       if (!foundCode) {
         const rawHtml = text.match(/<!DOCTYPE html>[\s\S]*/i) || text.match(/<html[\s\S]*<\/html>/i);
@@ -2097,8 +2100,8 @@ function renderMessage(role, text, kind, attachments, animate, sources, fileName
 
 function processMessageContent(el) {
   el.querySelectorAll('pre code').forEach((block) => {
-    const lang = Array.from(block.classList).find(c => c.startsWith('language-'))?.replace('language-','') || 'code';
-    
+    const lang = Array.from(block.classList).find(c => c.startsWith('language-'))?.replace('language-', '') || 'code';
+
     if (lang === 'mermaid' && typeof mermaid !== 'undefined') {
       const content = block.textContent;
       const pre = block.parentElement;
@@ -2214,14 +2217,14 @@ function processMessageContent(el) {
 
     hljs.highlightElement(block);
     const pre = block.parentElement;
-    if(!pre.querySelector('.code-actions')) {
-       const hdr = document.createElement('div');
-       hdr.className = "code-header";
-       hdr.innerHTML = `<span>${lang}</span><div class="code-actions">
+    if (!pre.querySelector('.code-actions')) {
+      const hdr = document.createElement('div');
+      hdr.className = "code-header";
+      hdr.innerHTML = `<span>${lang}</span><div class="code-actions">
          <button class="preview-code-btn" onclick="previewCode(this)">Preview</button>
          <button class="copy-code-btn" onclick="copyCode(this)">Copy</button>
        </div>`;
-       pre.insertBefore(hdr, block);
+      pre.insertBefore(hdr, block);
     }
   });
 }
@@ -2282,7 +2285,7 @@ function scrollToBottom() {
 
 function parseMarkdown(text) {
   if (!text) return "";
-  
+
   const processedText = text.replace(/\\n/g, "\n");
 
   if (typeof marked !== 'undefined') {
@@ -2332,9 +2335,9 @@ function getOfflineReply(text) {
 function applyThemeColor() {
   document.documentElement.style.setProperty('--primary-color', appSettings.themeColor || '#60a5fa');
   document.documentElement.style.setProperty('--primary-rgb', appSettings.themeRgb || '96, 165, 250');
-  
+
   DOM.colorBtns.forEach(btn => {
-    btn.classList.toggle("active", btn.style.getPropertyValue('--c').replace(/ /g,'') === (appSettings.themeColor||'').replace(/ /g,'') || (btn.dataset.color==='blue' && !appSettings.themeColor));
+    btn.classList.toggle("active", btn.style.getPropertyValue('--c').replace(/ /g, '') === (appSettings.themeColor || '').replace(/ /g, '') || (btn.dataset.color === 'blue' && !appSettings.themeColor));
   });
 }
 function initCustomSelect() {
@@ -2358,11 +2361,11 @@ function initCustomSelect() {
       e.stopPropagation();
       options.forEach(o => o.classList.remove("active"));
       opt.classList.add("active");
-      
+
       const val = opt.dataset.value;
       activeTitle.textContent = opt.dataset.title;
       activeSub.textContent = opt.dataset.sub;
-      
+
       hiddenSelect.value = val;
       customSelect.classList.remove("open");
 
@@ -2384,9 +2387,9 @@ function initCustomSelect() {
 
 function switchBuilderTab(tab) {
   const panePreview = document.getElementById('pane-preview');
-  const paneCode    = document.getElementById('pane-code');
-  const tabPreview  = DOM.mainTabPreview;
-  const tabCode     = DOM.mainTabCode;
+  const paneCode = document.getElementById('pane-code');
+  const tabPreview = DOM.mainTabPreview;
+  const tabCode = DOM.mainTabCode;
 
   if (tab === 'preview') {
     panePreview.classList.remove('hidden');
@@ -2421,7 +2424,7 @@ function initBuilderControls() {
   DOM.builderCodeInput?.addEventListener('scroll', (e) => {
     const pre = DOM.builderCodeContent?.parentElement;
     if (pre) {
-      pre.scrollTop  = e.target.scrollTop;
+      pre.scrollTop = e.target.scrollTop;
       pre.scrollLeft = e.target.scrollLeft;
     }
   });
@@ -2441,7 +2444,7 @@ function syncHighlight(code) {
   if (!DOM.builderCodeContent) return;
   DOM.builderCodeContent.textContent = code;
   DOM.builderCodeContent.removeAttribute('data-highlighted');
-  try { hljs.highlightElement(DOM.builderCodeContent); } catch (e) {}
+  try { hljs.highlightElement(DOM.builderCodeContent); } catch (e) { }
 }
 
 function updateBuilderIframe() {
@@ -2479,21 +2482,21 @@ function updateBuilderIframe() {
 }
 
 function downloadProject() {
-    const html = builderProject.files['index.html'];
-    const css = builderProject.files['style.css'];
-    const js = builderProject.files['script.js'];
-    
-    let combined = html;
-    if (css) combined = combined.replace('</head>', `<style>${css}</style></head>`);
-    if (js) combined = combined.replace('</body>', `<script>${js}</script></body>`);
-    
-    const blob = new Blob([combined], { type: "text/html" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `IOT-project-${Date.now()}.html`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const html = builderProject.files['index.html'];
+  const css = builderProject.files['style.css'];
+  const js = builderProject.files['script.js'];
+
+  let combined = html;
+  if (css) combined = combined.replace('</head>', `<style>${css}</style></head>`);
+  if (js) combined = combined.replace('</body>', `<script>${js}</script></body>`);
+
+  const blob = new Blob([combined], { type: "text/html" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `IOT-project-${Date.now()}.html`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function updateBuilder() {
@@ -2508,8 +2511,8 @@ function updateBuilder() {
     item.className = `builder-file-item${builderProject.activeFile === filename ? ' active' : ''}`;
 
     let iconColor = '#9ca3af';
-    if (filename.endsWith('.js'))   iconColor = '#facc15';
-    if (filename.endsWith('.css'))  iconColor = '#60a5fa';
+    if (filename.endsWith('.js')) iconColor = '#facc15';
+    if (filename.endsWith('.css')) iconColor = '#60a5fa';
     if (filename.endsWith('.html')) iconColor = '#fb923c';
 
     item.innerHTML = `
@@ -2529,7 +2532,7 @@ function updateBuilder() {
   });
 
   const code = builderProject.files[builderProject.activeFile] || '';
-  if (DOM.builderCodeInput)    DOM.builderCodeInput.value = code;
+  if (DOM.builderCodeInput) DOM.builderCodeInput.value = code;
   if (DOM.builderFilenameDisplay) DOM.builderFilenameDisplay.textContent = builderProject.activeFile;
   syncHighlight(code);
 
@@ -2588,19 +2591,19 @@ function initSettingsAndDocs() {
     applyTheme();
     localStorage.setItem("IOT_app_settings", JSON.stringify(appSettings));
   });
-  
+
   DOM.animToggle.addEventListener("change", (e) => {
     appSettings.animations = e.target.checked;
     applyTheme();
     localStorage.setItem("IOT_app_settings", JSON.stringify(appSettings));
   });
-  
+
   DOM.contrastToggle.addEventListener("change", (e) => {
     appSettings.highContrast = e.target.checked;
     applyTheme();
     localStorage.setItem("IOT_app_settings", JSON.stringify(appSettings));
   });
-  
+
   DOM.resetSettingsBtn?.addEventListener("click", () => {
     if (confirm("Are you sure you want to reset all settings to their defaults?")) {
       localStorage.removeItem("IOT_settings_v3");
@@ -2618,13 +2621,13 @@ function initSettingsAndDocs() {
 
   DOM.settingsCloseBtn.addEventListener("click", () => DOM.settingsModal.classList.remove("active"));
   DOM.docsCloseBtn.addEventListener("click", () => DOM.docsModal.classList.remove("active"));
-  
+
   DOM.settingsModal.addEventListener("click", (e) => {
     if (e.target === DOM.settingsModal) DOM.settingsModal.classList.remove("active");
   });
   DOM.docsModal.addEventListener("click", (e) => {
     if (e.target === DOM.docsModal) DOM.docsModal.classList.remove("active");
-  });  
+  });
   DOM.settingsNavBtns.forEach(btn => {
     btn.addEventListener("click", () => {
       DOM.settingsNavBtns.forEach(b => b.classList.remove("active"));
@@ -2690,7 +2693,7 @@ function applyTheme() {
 
 function saveSettings() {
   const prompt = DOM.systemPromptInput.value.trim();
-  
+
   if (prompt) localStorage.setItem("IOT_system_prompt", prompt);
   else localStorage.removeItem("IOT_system_prompt");
 
@@ -2719,7 +2722,7 @@ function loadSettings() {
   if (savedSettings) {
     const parsed = JSON.parse(savedSettings);
     appSettings = { ...appSettings, ...parsed };
-    
+
     DOM.themeCards.forEach(c => {
       c.classList.toggle('active', c.dataset.theme === appSettings.theme);
     });
@@ -2766,7 +2769,7 @@ function loadSettings() {
       }
       initLogoSkin(appSettings.logoSkin);
     }
-    
+
     applyTheme();
     applyThemeColor();
   }
@@ -2778,20 +2781,20 @@ function updateFilesGrid() {
   DOM.filesGrid.innerHTML = '';
   Object.keys(builderProject.files).forEach(filename => {
     if (!builderProject.files[filename] && filename !== 'index.html') return;
-    
+
     const ext = filename.split('.').pop();
     let iconPath = '<path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline>';
-    
+
     const card = document.createElement('div');
     card.className = 'file-card';
     card.innerHTML = '<div class="file-card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' + iconPath + '</svg></div><div class="file-card-info" style="text-align:center;"><div class="file-card-name">' + filename + '</div><div class="file-card-type">' + ext.toUpperCase() + ' File</div></div>';
-    
+
     card.addEventListener('click', () => {
       builderProject.activeFile = filename;
       DOM.builderCodeTab.click();
       updateBuilder();
     });
-    
+
     DOM.filesGrid.appendChild(card);
   });
 }
