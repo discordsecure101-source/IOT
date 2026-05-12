@@ -1,0 +1,21 @@
+{
+  "name": "IOT",
+  "version": "1.0.0",
+  "description": "IOT Roblox scripting assistant",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.3",
+    "cheerio": "^1.2.0",
+    "duck-duck-scrape": "^2.2.7",
+    "express": "^4.21.2",
+    "express-session": "^1.19.0",
+    "googlethis": "^1.8.0",
+    "jsonwebtoken": "^9.0.3",
+    "node-fetch": "^2.7.0",
+    "uuid": "^14.0.0"
+  }
+}
