@@ -266,7 +266,7 @@ function initializeKeys() {
         code: "IOT-2026",
         label: "Founder Key",
         tier: "admin",
-        maxUses: -1,
+        maxUses: 1,
         usedCount: 0,
         usedBy: [],
         createdAt: new Date().toISOString(),
@@ -288,7 +288,7 @@ function initializeKeys() {
     ];
     saveJSON(KEYS_FILE, keys);
     console.log("[AUTH] Initialized default invite keys");
-    console.log(`  â”œâ”€ Founder Key: IOT-2026 (unlimited)`);
+    console.log(`  â”œâ”€ Founder Key: IOT-2026 (single use)`);
     console.log(`  â””â”€ Beta Key: ${keys[1].code} (10 uses, 30d expiry)`);
   }
   return keys;
@@ -813,7 +813,7 @@ app.post("/api/chat", requireAuth, async (req, res) => {
   const timeContext = `\n\n[REAL-TIME CONTEXT: Today is ${currentFullDate}. Current time: ${currentTime}. All 'current' or 'latest' requests refer to this timeline.]`;
 
   const { message, history = [], model, search, customApiKey, customSystemPrompt, temperature, searchLimit = 3, screenshotData, images = [] } = req.body;
-  
+
   // ADMIN COMMAND: Generate single-use key
   if (message.trim().toLowerCase() === "/genkey" && req.session.tier === "admin") {
     const newKey = {
