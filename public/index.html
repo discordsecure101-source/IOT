@@ -601,6 +601,13 @@
           </svg>
           <span>Privacy</span>
         </button>
+        <button class="settings-nav-btn" data-tab="settings-admin" id="admin-tab-btn" style="display:none;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          <span>Admin</span>
+        </button>
       </div>
       <div class="settings-content">
         <div class="modal-header" style="padding: 0 0 20px 0; border:none; background:none;">
@@ -838,6 +845,19 @@
               style="width:100%; margin-bottom:10px;">Reset All Settings</button>
             <button class="modal-btn modal-btn-confirm" id="delete-data-btn"
               style="width:100%; background:#ef4444;">Delete All Local Data</button>
+          </div>
+        </div>
+
+        <div class="settings-pane" id="settings-admin">
+          <div class="setting-group">
+            <label class="settings-label">Admin Control Panel</label>
+            <p class="settings-desc">Generate one-time use invitation codes for new users.</p>
+            <button class="modal-btn modal-btn-confirm" id="admin-gen-key-btn" style="width:100%; margin-top:10px; background:var(--primary-color);">Generate Single-Use Key</button>
+          </div>
+          <div id="admin-key-display" style="margin-top:15px; padding:15px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:12px; display:none; text-align:center; animation: slideUp 0.3s ease;">
+            <div style="font-size:0.75rem; opacity:0.6; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">New Key Generated</div>
+            <div id="admin-new-key-code" style="font-family:'JetBrains Mono',monospace; font-size:1.4rem; font-weight:700; margin-bottom:12px; color:var(--primary-color); letter-spacing:2px;">CODE-HERE</div>
+            <button class="modal-btn" id="admin-copy-key-btn" style="width:100%; font-size:0.85rem; padding:8px;">Copy to Clipboard</button>
           </div>
         </div>
 

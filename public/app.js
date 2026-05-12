@@ -136,7 +136,12 @@ const DOM = {
   imageViewerDownloadBtn: $("#image-viewer-download-btn"),
   imageViewerImg: $("#image-viewer-img"),
   imageViewerModal: $("#image-viewer-modal"),
-  imageViewerCloseBtn: $("#image-viewer-close-btn")
+  imageViewerCloseBtn: $("#image-viewer-close-btn"),
+  adminTabBtn: $("#admin-tab-btn"),
+  adminGenBtn: $("#admin-gen-key-btn"),
+  adminKeyDisplay: $("#admin-key-display"),
+  adminNewKeyCode: $("#admin-new-key-code"),
+  adminCopyBtn: $("#admin-copy-key-btn")
 };
 
 window.copyCode = function (btn) {
@@ -194,6 +199,11 @@ async function initAuth() {
     if (!data.authenticated) {
       document.getElementById('auth-modal').classList.add('active');
       initAuthUI();
+    } else {
+      if (data.user && data.user.tier === 'admin') {
+        if (DOM.adminTabBtn) DOM.adminTabBtn.style.display = 'flex';
+        initAdminUI();
+      }
     }
   } catch (err) {
     console.error('Auth check failed:', err);
@@ -202,6 +212,36 @@ async function initAuth() {
   }
 }
 initAuth();
+
+function initAdminUI() {
+  if (DOM.adminGenBtn) {
+    DOM.adminGenBtn.addEventListener('click', async () => {
+      try {
+        const res = await fetch('/api/admin/keys/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ label: 'Quick Single-Use Key', maxUses: 1 })
+        });
+        const data = await res.json();
+        if (data.success) {
+          DOM.adminNewKeyCode.textContent = data.key.code;
+          DOM.adminKeyDisplay.style.display = 'block';
+        }
+      } catch (err) {
+        console.error('Failed to generate key:', err);
+      }
+    });
+  }
+
+  if (DOM.adminCopyBtn) {
+    DOM.adminCopyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(DOM.adminNewKeyCode.textContent);
+      const originalText = DOM.adminCopyBtn.textContent;
+      DOM.adminCopyBtn.textContent = 'Copied!';
+      setTimeout(() => { DOM.adminCopyBtn.textContent = originalText; }, 2000);
+    });
+  }
+}
 
 function initAuthUI() {
   const sessionId = crypto.randomUUID().split('-').slice(0, 2).join('');

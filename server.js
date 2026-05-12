@@ -813,6 +813,27 @@ app.post("/api/chat", requireAuth, async (req, res) => {
   const timeContext = `\n\n[REAL-TIME CONTEXT: Today is ${currentFullDate}. Current time: ${currentTime}. All 'current' or 'latest' requests refer to this timeline.]`;
 
   const { message, history = [], model, search, customApiKey, customSystemPrompt, temperature, searchLimit = 3, screenshotData, images = [] } = req.body;
+  
+  // ADMIN COMMAND: Generate single-use key
+  if (message.trim().toLowerCase() === "/genkey" && req.session.tier === "admin") {
+    const newKey = {
+      id: crypto.randomUUID(),
+      code: generateInviteCode(),
+      label: "One-Time Access (Generated)",
+      tier: "user",
+      maxUses: 1,
+      usedCount: 0,
+      usedBy: [],
+      createdAt: new Date().toISOString(),
+      expiresAt: null,
+      active: true
+    };
+    inviteKeys = loadJSON(KEYS_FILE);
+    inviteKeys.push(newKey);
+    saveJSON(KEYS_FILE, inviteKeys);
+    return res.json({ reply: `### 🔑 Admin Key Generated\nYour single-use invitation code is: \`${newKey.code}\`\n\n*Note: This key will expire after one registration.*`, sources: [] });
+  }
+
   const isPro = (model === "IOT-pro" || model === "IOT-uncensored");
   const defaultTemp = isPro ? 80 : 30;
   const tempVal = (temperature !== undefined ? temperature : defaultTemp) / 100;
