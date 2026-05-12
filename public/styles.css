@@ -8728,4 +8728,51 @@ body[data-bubble-style="minimal"] .message {
   .builder-panel.active {
     transform: translateY(0);
   }
+  
+  /* Settings Mobile */
+  .settings-dashboard {
+    flex-direction: column;
+    height: 90vh;
+    max-height: 90vh;
+    width: 95vw;
+  }
+  
+  .settings-sidebar {
+    width: 100%;
+    flex-direction: row;
+    padding: 12px;
+    overflow-x: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--panel-border);
+    gap: 8px;
+    scrollbar-width: none;
+  }
+  
+  .settings-sidebar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .settings-sidebar-title {
+    display: none;
+  }
+  
+  .settings-nav-btn {
+    padding: 8px 14px;
+    white-space: nowrap;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    font-size: 0.8rem;
+  }
+  
+  .settings-nav-btn.active {
+    background: rgba(var(--primary-rgb), 0.15);
+  }
+  
+  .settings-content {
+    padding: 16px;
+  }
+  
+  .color-grid, .bg-anim-grid, .theme-grid {
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  }
 }
