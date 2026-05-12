@@ -1,3 +1,4 @@
+console.log("!!! SPYIMUS SYSTEM v2.0 READY !!!");
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => document.querySelectorAll(s);
 
