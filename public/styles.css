@@ -6093,7 +6093,7 @@ body[data-bubble-style="minimal"] .message {
     top: 0;
     left: 0;
     height: 100vh;
-    z-index: 1000;
+    z-index: 10000 !important;
     transform: translateX(-100%);
     width: 280px !important;
     transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
@@ -6111,7 +6111,7 @@ body[data-bubble-style="minimal"] .message {
   }
 
   .sidebar-overlay {
-    z-index: 999;
+    z-index: 9999 !important;
   }
 
   .app.sidebar-open .sidebar-overlay {
