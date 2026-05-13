@@ -8776,3 +8776,28 @@ body[data-bubble-style="minimal"] .message {
     grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
   }
 }
+
+/* PWA & Mobile Enhancements */
+@media (max-width: 768px) {
+  .chat-form-wrapper {
+    padding-bottom: calc(16px + env(safe-area-inset-bottom)) !important;
+  }
+  
+  body.standalone .chat-topbar {
+    padding-top: calc(10px + env(safe-area-inset-top));
+  }
+  
+  .composer {
+    border-radius: 18px;
+  }
+}
+
+/* Ensure no gray highlight on touch */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Better scrolling on iOS */
+.messages, .sidebar-history, .settings-content {
+  -webkit-overflow-scrolling: touch;
+}
