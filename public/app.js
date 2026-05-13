@@ -419,6 +419,11 @@ async function handleLogin(e) {
 
       setTimeout(() => {
         document.getElementById('auth-modal').classList.remove('active');
+        if (data.user && data.user.tier === 'admin') {
+          const adminTab = document.getElementById('admin-tab-btn');
+          if (adminTab) adminTab.style.display = 'flex';
+          initAdminUI();
+        }
       }, 800);
     } else {
       submitBtn.classList.remove('loading');
@@ -478,6 +483,11 @@ async function handleRegister(e) {
 
       setTimeout(() => {
         document.getElementById('auth-modal').classList.remove('active');
+        if (data.user && data.user.tier === 'admin') {
+          const adminTab = document.getElementById('admin-tab-btn');
+          if (adminTab) adminTab.style.display = 'flex';
+          initAdminUI();
+        }
       }, 800);
     } else {
       submitBtn.classList.remove('loading');
