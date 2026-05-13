@@ -1,4 +1,4 @@
-﻿const express = require("express");
+const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const crypto = require("crypto");
@@ -203,7 +203,7 @@ app.use(session({
 }));
 
 
-const DATA_DIR = path.join(__dirname, "data");
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, "data");
 const USERS_FILE = path.join(DATA_DIR, "users.json");
 const KEYS_FILE = path.join(DATA_DIR, "invite_keys.json");
 const AUDIT_FILE = path.join(DATA_DIR, "audit_log.json");
