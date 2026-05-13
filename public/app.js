@@ -1218,8 +1218,22 @@ function drawLogoSkin() {
   if (!conversations.length) createNewChat(true);
   else setActiveChat(conversations[0].id);
 
-  DOM.collapseBtn?.addEventListener("click", toggleSidebar);
-  DOM.openBtn?.addEventListener("click", toggleSidebar);
+  DOM.collapseBtn?.addEventListener("click", () => {
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+      closeSidebar();
+    } else {
+      toggleSidebar();
+    }
+  });
+  DOM.openBtn?.addEventListener("click", () => {
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+      openSidebar();
+    } else {
+      toggleSidebar();
+    }
+  });
   DOM.newChatBtn?.addEventListener("click", () => createNewChat());
   DOM.newChatTopBtn?.addEventListener("click", () => createNewChat());
   DOM.overlay?.addEventListener("click", closeSidebar);
@@ -1449,12 +1463,23 @@ let currentFileContent = "";
 function toggleSidebar() {
   const isMobile = window.innerWidth <= 768;
   if (isMobile) {
-    DOM.app.classList.toggle("sidebar-open");
-    DOM.overlay.classList.toggle("visible");
+    const isOpen = DOM.app.classList.contains("sidebar-open");
+    if (isOpen) {
+      closeSidebar();
+    } else {
+      openSidebar();
+    }
   } else {
     DOM.app.classList.toggle("sidebar-collapsed");
   }
 }
+
+function openSidebar() {
+  DOM.app.classList.add("sidebar-open");
+  DOM.app.classList.remove("sidebar-collapsed");
+  DOM.overlay.classList.add("visible");
+}
+
 function closeSidebar() {
   DOM.app.classList.remove("sidebar-open");
   DOM.overlay.classList.remove("visible");
