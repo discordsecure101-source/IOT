@@ -124,12 +124,12 @@ function trimHistory(history, maxTokens = 4000) {
 
   // Always keep the system prompt if it's there (usually index 0)
   // But our history here is just the conversation history, system prompt is added later.
-  
+
   // Iterate backwards to keep the most recent context
   for (let i = history.length - 1; i >= 0; i--) {
     const msg = history[i];
     const content = msg.content || "";
-    
+
     if (currentChars + content.length > maxChars) {
       // If the most recent message itself is too big, truncate it
       if (trimmed.length === 0) {
@@ -138,9 +138,9 @@ function trimHistory(history, maxTokens = 4000) {
           content: content.substring(0, maxChars) + "\n\n[Content Truncated due to size limits...]"
         });
       }
-      break; 
+      break;
     }
-    
+
     trimmed.unshift(msg);
     currentChars += content.length;
   }
@@ -859,24 +859,30 @@ app.post("/api/chat", requireAuth, async (req, res) => {
   }
 
   // IMAGE GENERATION: Detect image requests
-  const imagePatterns = /\b(generate|create|make|draw|design|paint|sketch|render|produce)\b.*\b(image|picture|photo|illustration|artwork|icon|logo|wallpaper|banner|portrait|visual)\b/i;
-  const imagePatterns2 = /\b(image|picture|photo|illustration|artwork)\b.*\b(of|for|showing|depicting|with)\b/i;
-  const isImageRequest = imagePatterns.test(message) || imagePatterns2.test(message) || /^(draw|paint|sketch|illustrate)\b/i.test(message.trim());
+  const imageActionWords = "(generate|create|make|draw|design|paint|sketch|render|produce|illustrate|show|depict)";
+  const imageObjectWords = "(image|picture|photo|photograph|illustration|artwork|icon|logo|wallpaper|banner|portrait|visual|scene|landscape)";
+  const imageRegex = new RegExp(`\\b${imageActionWords}\\b.*\\b${imageObjectWords}\\b|\\b${imageObjectWords}\\b.*\\b${imageActionWords}\\b|^${imageActionWords}\\b`, "i");
+
+  const isImageRequest = imageRegex.test(message.trim());
 
   if (isImageRequest) {
+    console.log("[IMAGE] Intercepted image request:", message);
     try {
-      // Use LLM to create an optimized image prompt
+      // Use a faster, more compliant model to create an optimized image prompt
       const promptRefine = await getLLMReply([
-        { role: "system", content: "You are an expert image prompt engineer. The user wants an AI-generated image. Extract and refine their request into a single, detailed, vivid image description in English. Output ONLY the image description, nothing else. No quotes, no explanation. Max 120 words. Be specific about style, lighting, colors, composition." },
-        { role: "user", content: message }
-      ], "llama-3.3-70b-versatile", 0, null, 0.5);
+        { role: "system", content: "You are a specialized image prompt generator. Your ONLY task is to take the user's request and turn it into a high-quality, descriptive image prompt for a photorealistic AI (Flux). Focus on: subjects, lighting, textures, cinematic style, and 8k resolution. DO NOT say you are an AI, DO NOT say you cannot generate images, and DO NOT give advice. Output ONLY the refined prompt in English. Max 100 words." },
+        { role: "user", content: `Refine this into a photorealistic image prompt: ${message}` }
+      ], "llama-3.1-8b-instant", 0, null, 0.7);
 
-      const cleanPrompt = promptRefine.replace(/^["']|["']$/g, '').trim();
+      let cleanPrompt = promptRefine.replace(/<think>[\s\S]*?<\/think>/gi, "").replace(/^["']|["']$/g, '').trim();
+
+      // Basic check if the refiner just refused
+      if (cleanPrompt.toLowerCase().includes("cannot") || cleanPrompt.toLowerCase().includes("as an ai") || cleanPrompt.length < 5) {
+        cleanPrompt = message.replace(new RegExp(imageActionWords, "gi"), "").replace(new RegExp(imageObjectWords, "gi"), "").trim();
+      }
+
       const seed = Math.floor(Math.random() * 999999);
       const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanPrompt)}?width=1024&height=1024&seed=${seed}&nologo=true&model=flux`;
-
-      // Pre-fetch to make sure it generates
-      try { await fetch(imageUrl, { method: 'HEAD', timeout: 30000 }); } catch (e) { /* ignore timeout */ }
 
       const reply = `### 🎨 Image Generated\n\n![${cleanPrompt.substring(0, 60)}](${imageUrl})\n\n**Prompt used:** *${cleanPrompt}*\n\n*Click the image to view full size. Need changes? Just describe what you'd like different.*`;
 

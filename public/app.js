@@ -1389,6 +1389,16 @@ function drawLogoSkin() {
     DOM.plusMenu.classList.remove("active");
   });
 
+  $("#generate-image-btn")?.addEventListener("click", () => {
+    const userPrompt = window.prompt("What would you like me to generate an image of? (e.g., 'A photorealistic lion in the jungle')");
+    if (userPrompt) {
+      DOM.input.value = `Generate a photorealistic image of ${userPrompt}`;
+      onInputChange();
+      DOM.form.requestSubmit();
+    }
+    DOM.plusMenu.classList.remove("active");
+  });
+
   $("#generate-viz-btn")?.addEventListener("click", () => {
     DOM.input.value = "Analyze the provided data or context and generate a high-quality data visualization using Chart.js. Return a JSON configuration object wrapped in a ```chart code block. Include relevant labels, datasets, and modern styling matching our dark theme.";
     onInputChange();
