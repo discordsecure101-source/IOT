@@ -2302,8 +2302,13 @@ function processMessageContent(el) {
          <button class="preview-code-btn" onclick="previewCode(this)">Preview</button>
          <button class="copy-code-btn" onclick="copyCode(this)">Copy</button>
        </div>`;
-      pre.insertBefore(hdr, block);
+    pre.insertBefore(hdr, block);
     }
+  });
+
+  // Make generated images clickable for full-size viewing
+  el.querySelectorAll('img').forEach(img => {
+    img.addEventListener('click', () => openImageViewer(img.src));
   });
 }
 

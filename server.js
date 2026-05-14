@@ -858,6 +858,35 @@ app.post("/api/chat", requireAuth, async (req, res) => {
     return res.json({ reply: `### 🔑 Admin Key Generated\nYour single-use invitation code is: \`${newKey.code}\`\n\n*Note: This key will expire after one registration.*`, sources: [] });
   }
 
+  // IMAGE GENERATION: Detect image requests
+  const imagePatterns = /\b(generate|create|make|draw|design|paint|sketch|render|produce)\b.*\b(image|picture|photo|illustration|artwork|icon|logo|wallpaper|banner|portrait|visual)\b/i;
+  const imagePatterns2 = /\b(image|picture|photo|illustration|artwork)\b.*\b(of|for|showing|depicting|with)\b/i;
+  const isImageRequest = imagePatterns.test(message) || imagePatterns2.test(message) || /^(draw|paint|sketch|illustrate)\b/i.test(message.trim());
+
+  if (isImageRequest) {
+    try {
+      // Use LLM to create an optimized image prompt
+      const promptRefine = await getLLMReply([
+        { role: "system", content: "You are an expert image prompt engineer. The user wants an AI-generated image. Extract and refine their request into a single, detailed, vivid image description in English. Output ONLY the image description, nothing else. No quotes, no explanation. Max 120 words. Be specific about style, lighting, colors, composition." },
+        { role: "user", content: message }
+      ], "llama-3.3-70b-versatile", 0, null, 0.5);
+
+      const cleanPrompt = promptRefine.replace(/^["']|["']$/g, '').trim();
+      const seed = Math.floor(Math.random() * 999999);
+      const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanPrompt)}?width=1024&height=1024&seed=${seed}&nologo=true&model=flux`;
+
+      // Pre-fetch to make sure it generates
+      try { await fetch(imageUrl, { method: 'HEAD', timeout: 30000 }); } catch (e) { /* ignore timeout */ }
+
+      const reply = `### 🎨 Image Generated\n\n![${cleanPrompt.substring(0, 60)}](${imageUrl})\n\n**Prompt used:** *${cleanPrompt}*\n\n*Click the image to view full size. Need changes? Just describe what you'd like different.*`;
+
+      return res.json({ reply, sources: [], kind: "safe" });
+    } catch (err) {
+      console.error("[IMAGE] Generation error:", err.message);
+      // Fall through to normal chat if image gen fails
+    }
+  }
+
   const isPro = (model === "IOT-pro" || model === "IOT-uncensored" || model === "IOT-coder");
   const defaultTemp = isPro ? 80 : 30;
   const tempVal = (temperature !== undefined ? temperature : defaultTemp) / 100;
