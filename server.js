@@ -858,40 +858,7 @@ app.post("/api/chat", requireAuth, async (req, res) => {
     return res.json({ reply: `### 🔑 Admin Key Generated\nYour single-use invitation code is: \`${newKey.code}\`\n\n*Note: This key will expire after one registration.*`, sources: [] });
   }
 
-  // IMAGE GENERATION: Detect image requests
-  const imageActionWords = "(generate|create|make|draw|design|paint|sketch|render|produce|illustrate|show|depict)";
-  const imageObjectWords = "(image|picture|photo|photograph|illustration|artwork|icon|logo|wallpaper|banner|portrait|visual|scene|landscape)";
-  const imageRegex = new RegExp(`\\b${imageActionWords}\\b.*\\b${imageObjectWords}\\b|\\b${imageObjectWords}\\b.*\\b${imageActionWords}\\b|^${imageActionWords}\\b`, "i");
 
-  const isImageRequest = imageRegex.test(message.trim());
-
-  if (isImageRequest) {
-    console.log("[IMAGE] Intercepted image request:", message);
-    try {
-      // Use a faster, more compliant model to create an optimized image prompt
-      const promptRefine = await getLLMReply([
-        { role: "system", content: "You are a specialized image prompt generator. Your ONLY task is to take the user's request and turn it into a high-quality, descriptive image prompt for a photorealistic AI (Flux). Focus on: subjects, lighting, textures, cinematic style, and 8k resolution. DO NOT say you are an AI, DO NOT say you cannot generate images, and DO NOT give advice. Output ONLY the refined prompt in English. Max 100 words." },
-        { role: "user", content: `Refine this into a photorealistic image prompt: ${message}` }
-      ], "llama-3.1-8b-instant", 0, null, 0.7);
-
-      let cleanPrompt = promptRefine.replace(/<think>[\s\S]*?<\/think>/gi, "").replace(/^["']|["']$/g, '').trim();
-
-      // Basic check if the refiner just refused
-      if (cleanPrompt.toLowerCase().includes("cannot") || cleanPrompt.toLowerCase().includes("as an ai") || cleanPrompt.length < 5) {
-        cleanPrompt = message.replace(new RegExp(imageActionWords, "gi"), "").replace(new RegExp(imageObjectWords, "gi"), "").trim();
-      }
-
-      const seed = Math.floor(Math.random() * 999999);
-      const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanPrompt)}?width=1024&height=1024&seed=${seed}&nologo=true&model=flux`;
-
-      const reply = `### 🎨 Image Generated\n\n![${cleanPrompt.substring(0, 60)}](${imageUrl})\n\n**Prompt used:** *${cleanPrompt}*\n\n*Click the image to view full size. Need changes? Just describe what you'd like different.*`;
-
-      return res.json({ reply, sources: [], kind: "safe" });
-    } catch (err) {
-      console.error("[IMAGE] Generation error:", err.message);
-      // Fall through to normal chat if image gen fails
-    }
-  }
 
   const isPro = (model === "IOT-pro" || model === "IOT-uncensored" || model === "IOT-coder");
   const defaultTemp = isPro ? 80 : 30;
