@@ -46,17 +46,6 @@ const DOM = {
   deleteChatDesc: $("#delete-chat-desc"),
   deleteChatConfirmBtn: $("#delete-chat-confirm-btn"),
   deleteChatCancelBtn: $("#delete-chat-cancel-btn"),
-  spyOsintBtn: $("#spy-osint-btn"),
-  osintView: $("#osint-view"),
-  osintResults: $("#osint-results"),
-  osintSearchInput: $("#osint-search-input"),
-  osintTypeSelect: $("#osint-type-select"),
-  osintSearchBtn: $("#osint-search-btn"),
-  osintFilterToggle: $("#osint-filter-toggle"),
-  osintFiltersPanel: $("#osint-filters-panel"),
-  osintSuggestions: $("#osint-suggestions"),
-  osintHistoryDropdown: $("#osint-history"),
-  osintResultsContainer: $("#osint-results-container"),
   drawer: $("#file-drawer"),
   drawerOverlay: $("#drawer-overlay"),
   drawerClose: $("#drawer-close-btn"),
@@ -1323,7 +1312,6 @@ function drawLogoSkin() {
   initCustomSelect();
   initBuilderControls();
   initSettingsAndDocs();
-  initOsint();
   applyThemeColor();
 
 
@@ -1622,7 +1610,6 @@ function createNewChat(silent = false) {
   document.body.classList.remove("builder-mode");
   builderProject.files = { 'index.html': '', 'style.css': '', 'script.js': '' };
   builderProject.activeFile = 'index.html';
-  exitOsintMode();
   setActiveChat(conv.id);
   if (!silent) closeSidebar();
 }
@@ -1634,7 +1621,6 @@ function setActiveChat(id) {
   DOM.topbarTitle.textContent = conv.title;
   DOM.messages.innerHTML = "";
   document.body.classList.remove("builder-mode");
-  exitOsintMode();
   if (conv.messages.length) {
     document.body.classList.add("has-messages");
     conv.messages.forEach((m) => renderMessage(m.role, m.text, m.kind, m.attachments, false));
@@ -2918,149 +2904,4 @@ function updateFilesGrid() {
   });
 }
 
-function initOsint() {
-  const searchInput = document.getElementById("dox-search-input");
-  const searchBtn = document.getElementById("dox-search-btn");
-  const chatFeed = document.getElementById("dox-chat-feed");
-  const clearBtn = document.getElementById("dox-clear-btn");
-  const hero = document.getElementById("dox-hero");
 
-  DOM.spyOsintBtn?.addEventListener("click", () => {
-    if (document.body.classList.contains("osint-mode")) {
-      exitOsintMode();
-    } else {
-      enterOsintMode();
-    }
-  });
-
-  document.querySelectorAll(".dox-chip[data-query]").forEach(chip => {
-    chip.addEventListener("click", () => {
-      const type = chip.dataset.query;
-      const hints = {
-        email: "Enter an email address...",
-        username: "Enter a username...",
-        phone: "Enter a phone number...",
-        name: "Enter a full name...",
-        ip: "Enter an IP address..."
-      };
-      if (searchInput) {
-        searchInput.placeholder = hints[type] || "Search databreaches...";
-        searchInput.focus();
-      }
-    });
-  });
-
-  searchBtn?.addEventListener("click", () => doxSubmit());
-
-  searchInput?.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") doxSubmit();
-  });
-
-  clearBtn?.addEventListener("click", () => {
-    if (chatFeed) chatFeed.innerHTML = "";
-    if (hero) { hero.style.display = ""; hero.style.opacity = "1"; }
-    document.body.classList.remove("osint-searching");
-  });
-
-  async function doxSubmit() {
-    if (!searchInput) return;
-    const query = searchInput.value.trim();
-    if (!query) return;
-
-    if (hero && hero.style.display !== "none") {
-      hero.style.opacity = "0";
-      setTimeout(() => { hero.style.display = "none"; }, 300);
-    }
-    document.body.classList.add("osint-searching");
-
-    addDoxMessage("user", query);
-    searchInput.value = "";
-    searchInput.placeholder = "Search databreaches...";
-
-    const thinkingEl = addDoxThinking();
-
-    searchInput.disabled = true;
-    searchBtn.disabled = true;
-
-    try {
-      const customApiKey = localStorage.getItem("IOT_api_key") || null;
-      const res = await fetch("/api/dox", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query, customApiKey })
-      });
-
-      const data = await res.json();
-
-      thinkingEl?.remove();
-
-      if (data.response) {
-        addDoxMessage("assistant", data.response);
-      } else if (data.error) {
-        addDoxMessage("assistant", `**Error:** ${data.error}`);
-      } else {
-        addDoxMessage("assistant", "No results found. Try a different search term.");
-      }
-    } catch (err) {
-      thinkingEl?.remove();
-      addDoxMessage("assistant", "**Connection error.** Failed to reach the DOX engine. Please try again.");
-    } finally {
-      searchInput.disabled = false;
-      searchBtn.disabled = false;
-      searchInput.focus();
-    }
-  }
-
-  function addDoxMessage(role, content) {
-    if (!chatFeed) return;
-
-    const msg = document.createElement("div");
-    msg.className = `dox-msg dox-msg-${role}`;
-
-    if (role === "user") {
-      msg.innerHTML = `<div class="dox-msg-bubble dox-user-bubble">${escapeHTML(content)}</div>`;
-    } else {
-      const formatted = parseMarkdown(content);
-      msg.innerHTML = `
-        <div class="dox-msg-label">zasender</div>
-        <div class="dox-msg-bubble dox-ai-bubble">${formatted}</div>
-      `;
-    }
-
-    chatFeed.appendChild(msg);
-    msg.scrollIntoView({ behavior: "smooth", block: "end" });
-    return msg;
-  }
-
-  function addDoxThinking() {
-    if (!chatFeed) return null;
-
-    const msg = document.createElement("div");
-    msg.className = "dox-msg dox-msg-assistant";
-    msg.innerHTML = `
-      <div class="dox-thinking">
-        <div class="dox-thinking-dots">
-          <span></span><span></span><span></span>
-        </div>
-        <span>Searching databases...</span>
-      </div>
-    `;
-    chatFeed.appendChild(msg);
-    msg.scrollIntoView({ behavior: "smooth", block: "end" });
-    return msg;
-  }
-}
-
-function enterOsintMode() {
-  document.body.classList.add("osint-mode");
-  DOM.spyOsintBtn?.classList.add("active");
-  DOM.topbarTitle.textContent = "IOT DOX";
-  document.querySelectorAll(".history-item").forEach(i => i.classList.remove("active"));
-  setTimeout(() => document.getElementById("dox-search-input")?.focus(), 100);
-}
-
-function exitOsintMode() {
-  document.body.classList.remove("osint-mode");
-  document.body.classList.remove("osint-searching");
-  DOM.spyOsintBtn?.classList.remove("active");
-}
