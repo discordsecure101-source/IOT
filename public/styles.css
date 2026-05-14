@@ -707,10 +707,14 @@ body.theme-contrast {
 .msg-row {
   max-width: 780px;
   margin: 0 auto;
-  padding: 20px 0;
+  padding: 24px 0;
   display: flex;
   gap: 16px;
   animation: messageIn .4s var(--ease) both
+}
+
+.msg-row.bot {
+  animation: messageIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .msg-avatar {
@@ -730,15 +734,16 @@ body.theme-contrast {
 }
 
 .msg-avatar.bot-av {
-  background: transparent;
+  background: rgba(var(--primary-rgb, 96, 165, 250), 0.1);
   color: #fff;
-  border: none;
+  border: 1px solid rgba(var(--primary-rgb, 96, 165, 250), 0.15);
+  border-radius: 12px;
 }
 
 .msg-avatar.bot-av svg {
-  width: 28px;
-  height: 28px;
-  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.15))
+  width: 22px;
+  height: 22px;
+  filter: drop-shadow(0 0 6px rgba(var(--primary-rgb, 96, 165, 250), 0.3))
 }
 
 .msg-row.bot.bot-entrance {
@@ -796,22 +801,30 @@ body.theme-contrast {
 }
 
 .msg-bot-name {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--primary-color);
-  margin-bottom: 4px;
-  letter-spacing: 0.02em;
+  margin-bottom: 6px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.85;
 }
 
 .msg-body {
   flex: 1;
   min-width: 0;
-  line-height: 1.7;
-  font-size: .94rem
+  line-height: 1.75;
+  font-size: .93rem;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.msg-row.bot .msg-body {
+  padding-left: 14px;
+  border-left: 2px solid rgba(var(--primary-rgb, 96, 165, 250), 0.2);
 }
 
 .msg-body p {
-  margin: 0 0 12px
+  margin: 0 0 14px
 }
 
 .msg-body p:last-child {
@@ -852,6 +865,11 @@ body.theme-contrast {
 .msg-body strong {
   color: #fff;
   font-weight: 600
+}
+
+.msg-body em {
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
 }
 
 .msg-body code {
@@ -943,7 +961,9 @@ body.theme-contrast {
 .msg-actions {
   display: flex;
   gap: 4px;
-  margin-top: 8px
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .msg-action-btn {
@@ -1584,10 +1604,6 @@ body.has-messages .messages {
     transform: translateY(0);
     filter: blur(0)
   }
-}
-
-.msg-row.bot {
-  animation: messageIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .advanced-thinking {
