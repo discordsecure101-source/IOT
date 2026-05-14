@@ -1185,6 +1185,24 @@ body:not(.has-messages) .chat-form-wrapper {
   transform: scale(1.05)
 }
 
+.send-btn.stop-mode {
+  background: #ef4444;
+  color: #fff;
+  opacity: 1;
+  pointer-events: auto;
+  animation: stopPulse 1.5s ease-in-out infinite;
+}
+
+.send-btn.stop-mode:hover {
+  background: #dc2626;
+  transform: scale(1.08);
+}
+
+@keyframes stopPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+}
+
 .image-preview {
   display: flex;
   gap: 10px;

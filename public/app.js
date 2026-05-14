@@ -196,6 +196,8 @@ let pendingFiles = [];
 let searchEnabled = false;
 let screenShareStream = null;
 let screenShareActive = false;
+let isGenerating = false;
+let activeAbortController = null;
 let pendingDeleteId = null;
 async function initAuth() {
   try {
@@ -1888,6 +1890,29 @@ function closeImageViewer() {
 }
 
 
+function setGeneratingState(generating) {
+  isGenerating = generating;
+  const sendBtn = DOM.sendBtn;
+  if (!sendBtn) return;
+
+  if (generating) {
+    sendBtn.classList.add('active', 'stop-mode');
+    sendBtn.type = 'button';
+    sendBtn.title = 'Stop generating';
+    sendBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>`;
+    sendBtn.onclick = () => {
+      if (activeAbortController) activeAbortController.abort();
+    };
+  } else {
+    sendBtn.classList.remove('stop-mode');
+    sendBtn.type = 'submit';
+    sendBtn.title = '';
+    sendBtn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polyline points="22 2 15 22 11 13 2 9 22 2"/></svg>`;
+    sendBtn.onclick = null;
+    onInputChange();
+  }
+}
+
 async function onSubmit(e) {
   e.preventDefault();
   let text = DOM.input.value.trim();
@@ -1942,25 +1967,39 @@ async function onSubmit(e) {
   const typing = addTypingIndicator(searchEnabled, userMsgText);
   scrollToBottom();
 
+  setGeneratingState(true);
+  activeAbortController = new AbortController();
+
   try {
-    const res = await requestChat(text, conv.messages.slice(-(appSettings.contextLimit + 1)), images);
+    const res = await requestChat(text, conv.messages.slice(-(appSettings.contextLimit + 1)), images, activeAbortController.signal);
     typing.remove();
     const reply = await res.json();
     const botMsg = { role: "bot", text: reply.text || reply.reply, kind: reply.kind || "safe", attachments: [], ts: Date.now(), sources: reply.sources || [] };
     conv.messages.push(botMsg);
     saveConversations();
     renderMessage("bot", botMsg.text, botMsg.kind, [], true, botMsg.sources);
-  } catch {
+  } catch (err) {
     typing.remove();
-    const fallback = getOfflineReply(text);
-    const botMsg = { role: "bot", text: fallback.text, kind: fallback.kind, attachments: [], ts: Date.now(), sources: [] };
-    conv.messages.push(botMsg);
-    saveConversations();
-    renderMessage("bot", botMsg.text, botMsg.kind, [], true, []);
+    if (err.name === 'AbortError') {
+      // User stopped — show a subtle cancelled message
+      const botMsg = { role: "bot", text: "_Response stopped._", kind: "safe", attachments: [], ts: Date.now(), sources: [] };
+      conv.messages.push(botMsg);
+      saveConversations();
+      renderMessage("bot", botMsg.text, botMsg.kind, [], false, []);
+    } else {
+      const fallback = getOfflineReply(text);
+      const botMsg = { role: "bot", text: fallback.text, kind: fallback.kind, attachments: [], ts: Date.now(), sources: [] };
+      conv.messages.push(botMsg);
+      saveConversations();
+      renderMessage("bot", botMsg.text, botMsg.kind, [], true, []);
+    }
+  } finally {
+    setGeneratingState(false);
+    activeAbortController = null;
   }
 }
 
-async function requestChat(message, history = [], images = []) {
+async function requestChat(message, history = [], images = [], signal = null) {
   const endpoints = ["/api/chat"];
   if (window.location.port !== "3000") endpoints.push("http://localhost:3000/api/chat");
   let lastErr;
@@ -1972,9 +2011,8 @@ async function requestChat(message, history = [], images = []) {
     try {
       const r = await fetch(ep, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
+        signal,
         body: JSON.stringify({
           message,
           history,
@@ -1990,7 +2028,7 @@ async function requestChat(message, history = [], images = []) {
       });
       if (!r.ok) throw new Error(r.status);
       return r;
-    } catch (err) { lastErr = err; }
+    } catch (err) { lastErr = err; if (err.name === 'AbortError') throw err; }
   }
   throw lastErr;
 }
@@ -2273,6 +2311,7 @@ function addTypingIndicator(isSearching = false, userText = "") {
   const row = document.createElement("div");
   row.className = "typing-indicator";
   const botAvatarSVG = '<svg width="18" height="18" viewBox="0 0 256 256" fill="none"><path d="M128 38L201 80V166L128 208L55 166V80L128 38Z" stroke="#fff" stroke-width="14" stroke-linejoin="round"/><path d="M128 38V124L201 166" stroke="#fff" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><path d="M128 124L55 166" stroke="#fff" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
   if (isSearching) {
     row.innerHTML = `<div class="msg-avatar bot-av">${botAvatarSVG}</div>
       <div class="search-thinking">
@@ -2280,9 +2319,9 @@ function addTypingIndicator(isSearching = false, userText = "") {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
         </div>
         <div class="search-thinking-text">
-          <span class="search-status-label">Okay, the user...</span>
+          <span class="search-status-label">Searching the web...</span>
           <div class="at-marquee-container">
-            <span class="search-status-sources">is asking about "${userText ? (userText.length > 80 ? userText.slice(0, 80) + '...' : userText) : 'this'}". <span class="search-progress-text">Looking through multiple sources...</span></span>
+            <span class="search-status-sources">Looking up "${userText ? (userText.length > 80 ? userText.slice(0, 80) + '...' : userText) : 'this'}" across multiple sources... <span class="search-progress-text">Fetching results...</span></span>
           </div>
         </div>
         <div class="search-spinner"></div>
@@ -2307,14 +2346,32 @@ function addTypingIndicator(isSearching = false, userText = "") {
           </svg>
         </div>
         <div class="at-text">
-          <span class="at-title">Okay, the user...</span>
+          <span class="at-title">Generating response</span>
           <div class="at-marquee-container">
-            <span class="at-sub">is asking about "${userText ? (userText.length > 80 ? userText.slice(0, 80) + '...' : userText) : 'this'}", let me think about how to respond...</span>
+            <span class="at-sub" id="at-status-text">Thinking about your request...</span>
           </div>
         </div>
         <div class="at-spinner"></div>
       </div>`;
+
+    // Cycle through status messages
+    const thinkingMsgs = [
+      "Thinking about your request...",
+      "Analyzing context...",
+      "Crafting a response...",
+      "Almost there..."
+    ];
+    let tIdx = 0;
+    const tInterval = setInterval(() => {
+      tIdx = (tIdx + 1) % thinkingMsgs.length;
+      const el = row.querySelector("#at-status-text");
+      if (el) el.textContent = thinkingMsgs[tIdx];
+      else clearInterval(tInterval);
+    }, 2500);
+    const origRemove2 = row.remove.bind(row);
+    row.remove = () => { clearInterval(tInterval); origRemove2(); };
   }
+
   DOM.messages.appendChild(row);
   return row;
 }
