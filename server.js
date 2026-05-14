@@ -116,6 +116,37 @@ function isRefusal(text) {
   return (startsWithRefusal || (containsRefusal && isShort) || refusalCount >= 1);
 }
 
+function trimHistory(history, maxTokens = 4000) {
+  // Rough token estimation: 1 token ~= 4 characters
+  const maxChars = maxTokens * 4;
+  let currentChars = 0;
+  const trimmed = [];
+
+  // Always keep the system prompt if it's there (usually index 0)
+  // But our history here is just the conversation history, system prompt is added later.
+  
+  // Iterate backwards to keep the most recent context
+  for (let i = history.length - 1; i >= 0; i--) {
+    const msg = history[i];
+    const content = msg.content || "";
+    
+    if (currentChars + content.length > maxChars) {
+      // If the most recent message itself is too big, truncate it
+      if (trimmed.length === 0) {
+        trimmed.unshift({
+          ...msg,
+          content: content.substring(0, maxChars) + "\n\n[Content Truncated due to size limits...]"
+        });
+      }
+      break; 
+    }
+    
+    trimmed.unshift(msg);
+    currentChars += content.length;
+  }
+  return trimmed;
+}
+
 function stripWarnings(text) {
   const warningPatterns = [
     /\*\*(?:Warning|Disclaimer|Note|Important|Caution|âš ï¸ )[:\s*]*\*\*[^\n]*(?:\n(?![#\-*`])[^\n]*)*/gi,
@@ -701,14 +732,11 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 async function getLLMReply(history, model = "qwen/qwen3-32b", retryCount = 0, customApiKey = null, temperature = 0.3, baseUrl = null, isPro = false) {
   const MAX_RETRIES = 8;
   const FALLBACK_MODELS = [
-    "qwen/qwen3-32b",
-    "openai/gpt-oss-120b",
     "llama-3.3-70b-versatile",
     "llama-3.1-8b-instant",
-    "deepseek/deepseek-r1-distill-llama-70b",
-    "meta-llama/llama-4-maverick-17b-128e-instruct",
-    "qwen/qwen3-32b",
-    "openai/gpt-oss-120b"
+    "llama-3.2-11b-vision-preview",
+    "mixtral-8x7b-32768",
+    "qwen-2.5-32b"
   ];
   const usingCustomKey = Boolean(customApiKey && String(customApiKey).trim());
 
@@ -913,10 +941,13 @@ app.post("/api/chat", requireAuth, async (req, res) => {
     });
   }
 
-  const mappedHistory = history.slice(-10).map(msg => ({
+  let mappedHistory = history.slice(-6).map(msg => ({
     role: msg.role === "bot" ? "assistant" : "user",
     content: msg.text || msg.content || ""
   })).filter(msg => msg.content.trim() !== "");
+
+  // Apply aggressive truncation to prevent TPM errors
+  mappedHistory = trimHistory(mappedHistory, 3500);
 
   if (mappedHistory.length > 0 && mappedHistory[mappedHistory.length - 1].role === "user") {
     mappedHistory.pop();
