@@ -1,8 +1,8 @@
 :root {
   --primary-color: #60a5fa;
   --primary-rgb: 96, 165, 250;
-  --bg-dark: #212121;
-  --bg-chat: #212121;
+  --bg-dark: #191919;
+  --bg-chat: #191919;
   --panel-bg: #171717;
   --panel-hover: #2a2a2a;
   --panel-border: rgba(255, 255, 255, 0.05);
