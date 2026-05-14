@@ -880,14 +880,40 @@
 
         <div class="settings-pane" id="settings-admin">
           <div class="setting-group">
-            <label class="settings-label">Admin Control Panel</label>
+            <label class="settings-label">Invitation Keys</label>
             <p class="settings-desc">Generate one-time use invitation codes for new users.</p>
             <button class="modal-btn modal-btn-confirm" id="admin-gen-key-btn" style="width:100%; margin-top:10px; background:var(--primary-color);">Generate Single-Use Key</button>
+            
+            <div id="admin-key-display" style="margin-top:15px; padding:15px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:12px; display:none; text-align:center; animation: slideUp 0.3s ease;">
+              <div style="font-size:0.75rem; opacity:0.6; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">New Key Generated</div>
+              <div id="admin-new-key-code" style="font-family:'JetBrains Mono',monospace; font-size:1.4rem; font-weight:700; margin-bottom:12px; color:var(--primary-color); letter-spacing:2px;">CODE-HERE</div>
+              <button class="modal-btn" id="admin-copy-key-btn" style="width:100%; font-size:0.85rem; padding:8px;">Copy to Clipboard</button>
+            </div>
           </div>
-          <div id="admin-key-display" style="margin-top:15px; padding:15px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:12px; display:none; text-align:center; animation: slideUp 0.3s ease;">
-            <div style="font-size:0.75rem; opacity:0.6; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">New Key Generated</div>
-            <div id="admin-new-key-code" style="font-family:'JetBrains Mono',monospace; font-size:1.4rem; font-weight:700; margin-bottom:12px; color:var(--primary-color); letter-spacing:2px;">CODE-HERE</div>
-            <button class="modal-btn" id="admin-copy-key-btn" style="width:100%; font-size:0.85rem; padding:8px;">Copy to Clipboard</button>
+
+          <div class="setting-group">
+            <label class="settings-label">User Management</label>
+            <div class="admin-table-wrapper" style="margin-top:10px; max-height:200px; overflow-y:auto; border:1px solid rgba(255,255,255,0.05); border-radius:8px;">
+              <table class="admin-table" style="width:100%; border-collapse:collapse; font-size:0.8rem;">
+                <thead style="background:rgba(255,255,255,0.03); position:sticky; top:0;">
+                  <tr>
+                    <th style="padding:10px; text-align:left;">Email</th>
+                    <th style="padding:10px; text-align:left;">Tier</th>
+                    <th style="padding:10px; text-align:right;">Logins</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-user-list">
+                  <!-- Users populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <label class="settings-label">System Audit Log</label>
+            <div id="admin-audit-log" style="margin-top:10px; padding:10px; background:rgba(0,0,0,0.2); border-radius:8px; font-family:'JetBrains Mono',monospace; font-size:0.7rem; max-height:150px; overflow-y:auto; color:rgba(255,255,255,0.7);">
+              <!-- Audit logs populated via JS -->
+            </div>
           </div>
         </div>
 

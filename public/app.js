@@ -146,7 +146,9 @@ const DOM = {
   adminGenBtn: $("#admin-gen-key-btn"),
   adminKeyDisplay: $("#admin-key-display"),
   adminNewKeyCode: $("#admin-new-key-code"),
-  adminCopyBtn: $("#admin-copy-key-btn")
+  adminCopyBtn: $("#admin-copy-key-btn"),
+  adminUserList: $("#admin-user-list"),
+  adminAuditLog: $("#admin-audit-log")
 };
 
 window.copyCode = function (btn) {
@@ -236,6 +238,7 @@ function initAdminUI() {
         if (data.success) {
           DOM.adminNewKeyCode.textContent = data.key.code;
           DOM.adminKeyDisplay.style.display = 'block';
+          fetchAdminData(); // Refresh logs
         }
       } catch (err) {
         console.error('Failed to generate key:', err);
@@ -250,6 +253,40 @@ function initAdminUI() {
       DOM.adminCopyBtn.textContent = 'Copied!';
       setTimeout(() => { DOM.adminCopyBtn.textContent = originalText; }, 2000);
     });
+  }
+
+  fetchAdminData();
+}
+
+async function fetchAdminData() {
+  try {
+    // Fetch Users
+    const userRes = await fetch('/api/admin/users');
+    const userData = await userRes.json();
+    if (userData.users && DOM.adminUserList) {
+      DOM.adminUserList.innerHTML = userData.users.map(u => `
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
+          <td style="padding:10px; opacity:0.8;">${u.email}</td>
+          <td style="padding:10px;"><span style="padding:2px 6px; border-radius:4px; background:rgba(255,255,255,0.05); font-size:0.7rem;">${u.tier.toUpperCase()}</span></td>
+          <td style="padding:10px; text-align:right; opacity:0.6;">${u.loginCount}</td>
+        </tr>
+      `).join('');
+    }
+
+    // Fetch Audit Logs
+    const auditRes = await fetch('/api/admin/audit');
+    const auditData = await auditRes.json();
+    if (auditData.logs && DOM.adminAuditLog) {
+      DOM.adminAuditLog.innerHTML = auditData.logs.reverse().map(l => `
+        <div style="margin-bottom:4px;">
+          <span style="opacity:0.3;">[${new Date(l.timestamp).toLocaleTimeString()}]</span>
+          <span style="color:var(--primary-color); font-weight:500;">${l.event}</span>
+          <span style="opacity:0.6;">${l.email || l.ip || ''}</span>
+        </div>
+      `).join('');
+    }
+  } catch (err) {
+    console.error('Failed to fetch admin data:', err);
   }
 }
 
