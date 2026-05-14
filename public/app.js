@@ -2312,65 +2312,43 @@ function addTypingIndicator(isSearching = false, userText = "") {
   row.className = "typing-indicator";
   const botAvatarSVG = '<svg width="18" height="18" viewBox="0 0 256 256" fill="none"><path d="M128 38L201 80V166L128 208L55 166V80L128 38Z" stroke="#fff" stroke-width="14" stroke-linejoin="round"/><path d="M128 38V124L201 166" stroke="#fff" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><path d="M128 124L55 166" stroke="#fff" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
-  if (isSearching) {
-    row.innerHTML = `<div class="msg-avatar bot-av">${botAvatarSVG}</div>
-      <div class="search-thinking">
-        <div class="search-thinking-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
-        </div>
-        <div class="search-thinking-text">
-          <span class="search-status-label">Searching the web...</span>
-          <div class="at-marquee-container">
-            <span class="search-status-sources">Looking up "${userText ? (userText.length > 80 ? userText.slice(0, 80) + '...' : userText) : 'this'}" across multiple sources... <span class="search-progress-text">Fetching results...</span></span>
-          </div>
-        </div>
-        <div class="search-spinner"></div>
-      </div>`;
-    const msgs = ["Searching DuckDuckGo...", "Searching Google...", "Reading pages...", "Extracting content...", "Analyzing sources...", "Generating answer..."];
-    let idx = 0;
-    const interval = setInterval(() => {
-      idx = (idx + 1) % msgs.length;
-      const el = row.querySelector(".search-progress-text");
-      if (el) el.textContent = msgs[idx];
-      else clearInterval(interval);
-    }, 2000);
-    row._searchInterval = interval;
-    const origRemove = row.remove.bind(row);
-    row.remove = () => { clearInterval(interval); origRemove(); };
-  } else {
-    row.innerHTML = `<div class="msg-avatar bot-av">${botAvatarSVG}</div>
-      <div class="advanced-thinking">
-        <div class="at-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-          </svg>
-        </div>
-        <div class="at-text">
-          <span class="at-title">Generating response</span>
-          <div class="at-marquee-container">
-            <span class="at-sub" id="at-status-text">Thinking about your request...</span>
-          </div>
-        </div>
-        <div class="at-spinner"></div>
-      </div>`;
+  const statusMsgs = isSearching
+    ? ["Searching the web...", "Reading sources...", "Extracting data...", "Analyzing results...", "Composing answer..."]
+    : ["Thinking...", "Analyzing...", "Writing...", "Almost ready..."];
 
-    // Cycle through status messages
-    const thinkingMsgs = [
-      "Thinking about your request...",
-      "Analyzing context...",
-      "Crafting a response...",
-      "Almost there..."
-    ];
-    let tIdx = 0;
-    const tInterval = setInterval(() => {
-      tIdx = (tIdx + 1) % thinkingMsgs.length;
-      const el = row.querySelector("#at-status-text");
-      if (el) el.textContent = thinkingMsgs[tIdx];
-      else clearInterval(tInterval);
-    }, 2500);
-    const origRemove2 = row.remove.bind(row);
-    row.remove = () => { clearInterval(tInterval); origRemove2(); };
-  }
+  row.innerHTML = `<div class="msg-avatar bot-av">${botAvatarSVG}</div>
+    <div class="msg-body">
+      <div class="msg-bot-name">IOT</div>
+      <div class="iot-loading-indicator">
+        <div class="iot-loading-content">
+          <div class="iot-loading-shimmer"></div>
+          <div class="iot-loading-status">
+            <span class="iot-loading-dot"></span>
+            <span class="iot-loading-text">${statusMsgs[0]}</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  let idx = 0;
+  const interval = setInterval(() => {
+    idx = (idx + 1) % statusMsgs.length;
+    const el = row.querySelector(".iot-loading-text");
+    if (el) {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(4px)';
+      setTimeout(() => {
+        el.textContent = statusMsgs[idx];
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0)';
+      }, 200);
+    } else {
+      clearInterval(interval);
+    }
+  }, 2200);
+
+  const origRemove = row.remove.bind(row);
+  row.remove = () => { clearInterval(interval); origRemove(); };
 
   DOM.messages.appendChild(row);
   return row;

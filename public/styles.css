@@ -983,6 +983,60 @@ body.theme-contrast {
   animation: messageIn .4s var(--ease) both
 }
 
+.iot-loading-indicator {
+  padding: 0;
+}
+
+.iot-loading-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.iot-loading-shimmer {
+  height: 48px;
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.03) 25%,
+    rgba(255,255,255,0.08) 50%,
+    rgba(255,255,255,0.03) 75%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+.iot-loading-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.iot-loading-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary-color, #60a5fa);
+  animation: loadingPulse 1.2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.iot-loading-text {
+  font-size: 0.78rem;
+  color: var(--text-muted, #999);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes loadingPulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
 .typing-dots {
   display: flex;
   align-items: center;
